@@ -1,0 +1,11 @@
+# stock-logistics-transport
+# https://github.com/OCA/stock-logistics-transport/pull/88
+odoo-addon-shipment-advice-planner @ git+https://github.com/OCA/stock-logistics-transport.git@refs/pull/88/head#subdirectory=setup/shipment_advice_planner
+
+# OCA/web
+# https://github.com/OCA/web/pull/2412 [16.0][MIG] web_notify: Migration to 16.0 #2412
+odoo-addon-web-notify @ git+https://github.com/acsone/web.git@16.0-mig-web_notify#subdirectory=setup/web_notify
+
+# server-tools
+# https://github.com/OCA/server-tools/pull/2550/files
+odoo-addon-base-time-window @ git+https://github.com/acsone/server-tools.git@16.0-base_time_window-sbj#subdirectory=setup/base_time_window
