@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import Command, _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class ShipmentAdvicePlanner(models.TransientModel):
@@ -12,7 +13,8 @@ class ShipmentAdvicePlanner(models.TransientModel):
         comodel_name="stock.picking",
         string="Pickings to plan",
         required=True,
-        domain=[("can_be_planned_in_shipment_advice", "=", True)],
+        domain='[("can_be_planned_in_shipment_advice", "=", True),'
+        '("warehouse_id", "=?", warehouse_id),]',
         compute="_compute_picking_to_plan_ids",
         store=True,
         readonly=False,
@@ -20,10 +22,51 @@ class ShipmentAdvicePlanner(models.TransientModel):
     shipment_planning_method = fields.Selection(
         selection=[("simple", "Simple")], required=True, default="simple"
     )
+    warehouse_id = fields.Many2one(comodel_name="stock.warehouse")
+    dock_id = fields.Many2one(
+        comodel_name="stock.dock", domain='[("warehouse_id", "=", warehouse_id)]'
+    )
+
+    @api.constrains("warehouse_id", "dock_id", "picking_to_plan_ids")
+    def _check_warehouse(self):
+        for rec in self:
+            if not rec.warehouse_id:
+                continue
+            if rec.dock_id and rec.dock_id.warehouse_id != rec.warehouse_id:
+                raise ValidationError(
+                    _("The dock doesn't belong to the selected warehouse.")
+                )
+            if (
+                rec.picking_to_plan_ids
+                and rec.picking_to_plan_ids.warehouse_id != rec.warehouse_id
+            ):
+                raise ValidationError(
+                    _("The transfers don't belong to the selected warehouse.")
+                )
+
+    @api.onchange("warehouse_id", "dock_id", "picking_to_plan_ids")
+    def _onchange_check_warehouse(self):
+        self.ensure_one()
+        self._check_warehouse()
+
+    @api.depends("picking_to_plan_ids")
+    def _check_picking_to_plan(self):
+        for rec in self:
+            if rec.picking_to_plan_ids.filtered(
+                lambda p: not p.can_be_planned_in_shipment_advice
+            ):
+                raise ValidationError(
+                    _("The transfers selected must be ready and of the delivery type.")
+                )
+
+    @api.onchange("picking_to_plan_ids")
+    def _onchange_check_picking_to_plan(self):
+        self.ensure_one()
+        self._check_picking_to_plan()
 
     @api.model
     def _get_compute_picking_to_plan_ids_depends(self):
-        return ["shipment_planning_method"]
+        return ["shipment_planning_method", "warehouse_id"]
 
     @api.depends(lambda m: m._get_compute_picking_to_plan_ids_depends())
     def _compute_picking_to_plan_ids(self):
@@ -33,8 +76,14 @@ class ShipmentAdvicePlanner(models.TransientModel):
         active_ids = self.env.context.get("active_ids")
         if not active_ids or active_model != "stock.picking":
             return self.update({"picking_to_plan_ids": False})
-        pickings = self.env[active_model].browse(active_ids)
-        pickings_to_plan = pickings.filtered("can_be_planned_in_shipment_advice")
+        pickings_to_plan = self.env[active_model].search(
+            [
+                ("id", "in", active_ids),
+                ("can_be_planned_in_shipment_advice", "=", True),
+                ("warehouse_id", "=?", self.warehouse_id.id),
+            ]
+        )
+
         return self.update({"picking_to_plan_ids": [Command.set(pickings_to_plan.ids)]})
 
     def button_plan_shipments(self):
@@ -97,5 +146,6 @@ class ShipmentAdvicePlanner(models.TransientModel):
         return {
             "shipment_type": "outgoing",
             "warehouse_id": warehouse.id,
+            "dock_id": self.dock_id.id,
             "company_id": warehouse.company_id.id,
         }
