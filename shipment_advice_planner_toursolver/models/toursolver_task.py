@@ -291,8 +291,10 @@ class ToursolverTask(models.Model):
             for window in delivery_windows:
                 time_windows.append(
                     {
-                        "beginTime": window.float_to_time_repr(window.start),
-                        "endTime": window.float_to_time_repr(window.end),
+                        "beginTime": window.float_to_time_repr(
+                            window.time_window_start
+                        ),
+                        "endTime": window.float_to_time_repr(window.time_window_end),
                     }
                 )
         else:
