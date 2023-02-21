@@ -24,7 +24,7 @@ class ToursolverResource(models.Model):
     )
     use_delivery_person_coordinates_as_end = fields.Boolean(
         help="If true the computed delivery will end at the delivery person's "
-        "address. Otherwise it will end at the Alcyon warehouse"
+        "address. Otherwise it will end at the warehouse address"
     )
     partner_id = fields.Many2one(comodel_name="res.partner", string="Contact")
 
