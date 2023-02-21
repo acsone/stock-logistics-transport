@@ -7,17 +7,12 @@
     <field name="arch" type="xml">
       <search>
         <field name="partner_id" />
-        <field name="week_day_ids" />
+        <field name="time_window_weekday_ids" />
         <group expand="0" string="Group By" name="group_by">
           <filter
                         name="group_by_partner_id"
                         string="Partner"
                         context="{'group_by':'partner_id'}"
-                    />
-          <filter
-                        name="group_by_preference"
-                        string="Preference"
-                        context="{'group_by':'preference'}"
                     />
         </group>
       </search>
@@ -28,10 +23,9 @@
     <field name="arch" type="xml">
       <tree editable="top">
         <field name="partner_id" />
-        <field name="start" widget="float_time" />
-        <field name="end" widget="float_time" />
-        <field name="preference" />
-        <field name="week_day_ids" widget="many2many_tags" />
+        <field name="time_window_start" widget="float_time" />
+        <field name="time_window_end" widget="float_time" />
+        <field name="time_window_weekday_ids" widget="many2many_tags" />
       </tree>
     </field>
   </record>

@@ -5,6 +5,5 @@ from . import toursolver_resource
 from . import toursolver_task
 from . import stock_picking
 from . import toursolver_delivery_window
-from . import toursolver_delivery_week_day
 from . import res_partner
 from . import shipment_advice
