@@ -28,6 +28,21 @@ class ToursolverResource(models.Model):
     )
     partner_id = fields.Many2one(comodel_name="res.partner", string="Contact")
 
+    def _get_resource_default_properties(self):
+        self.ensure_one()
+        work_start_time = self.toursolver_backend_id._get_work_start_time_formatted()
+        loading_duration = self.toursolver_backend_id._get_loading_duration_formatted()
+        return {
+            "travelPenalty": self.toursolver_backend_id.resource_default_travel_penalty,
+            "workPenalty": self.toursolver_backend_id.resource_default_work_penalty,
+            "workStartTime": work_start_time,
+            "fixedLoadingDuration": loading_duration,
+        }
+
     def _get_resource_properties(self):
         self.ensure_one()
-        return {p.get("string"): p.get("value") for p in self.resource_properties}
+        result = self._get_resource_default_properties()
+        result.update(
+            {p.get("string"): p.get("value") for p in self.resource_properties}
+        )
+        return result

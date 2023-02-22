@@ -13,10 +13,16 @@ class ShipmentAdvicePlanner(models.TransientModel):
         ondelete={"toursolver": "cascade"},
     )
     delivery_resource_ids = fields.Many2many(
-        comodel_name="toursolver.resource", string="Delivery resources"
+        comodel_name="toursolver.resource",
+        string="Delivery resources",
+        help="delivery resources to be considered in geo-optimazation",
     )
     toursolver_resource_id = fields.Many2one(
-        comodel_name="toursolver.resource", string="Toursolver Resource", readonly=True
+        comodel_name="toursolver.resource",
+        string="Toursolver Resource",
+        readonly=True,
+        help="TourSolver resource to be propgated to the shipment advice in simple"
+        "planning method",
     )
     toursolver_task_id = fields.Many2one(
         comodel_name="toursolver.task", string="Toursolver Task", readonly=True
