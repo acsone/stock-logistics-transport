@@ -12,13 +12,9 @@ import requests
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
+from .tools import seconds_to_duration
+
 _logger = logging.getLogger("TourSolver Connexion")
-
-
-def seconds_to_duration(sec):
-    m, s = divmod(sec, 60)
-    h, m = divmod(m, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
 
 
 class ToursolverTask(models.Model):
@@ -307,10 +303,10 @@ class ToursolverTask(models.Model):
         backend = self.toursolver_backend_id
         return {
             "beginTime": delivery_window_model.float_to_time_repr(
-                backend.delivery_window_start
+                backend.partner_defaul_delivery_window_start
             ),
             "endTime": delivery_window_model.float_to_time_repr(
-                backend.delivery_window_end
+                backend.partner_default_delivery_window_end
             ),
         }
 
@@ -323,17 +319,6 @@ class ToursolverTask(models.Model):
     def _toursolver_json_request_resource(self, resource):
         res = resource._get_resource_properties()
         res.update(self._toursolver_json_request_resource_start_end_position(resource))
-        work_start_time = self.toursolver_backend_id._get_work_start_time_formatted()
-        loading_duration = self.toursolver_backend_id._get_loading_duration_formatted()
-        res.update(
-            {
-                "workStartTime": work_start_time,
-                "fixedLoadingDuration": loading_duration,
-                # can be resource prop?
-                "travelPenalty": self.toursolver_backend_id.travel_penalty,
-                "workPenalty": self.toursolver_backend_id.work_penalty,
-            }
-        )
         return res
 
     def _toursolver_json_request_resource_start_end_position(self, resource):
@@ -356,13 +341,14 @@ class ToursolverTask(models.Model):
 
     def _toursolver_json_request_options(self):
         self.ensure_one()
-        res = {
-            "vehicleCode": "deliveryIntermediateVehicle",
-            "maxOptimDuration": seconds_to_duration(
-                self.toursolver_backend_id.duration
-            ),
-            "useForbiddenTransitAreas": False,
-        }
+        res = self.toursolver_backend_id._get_backend_options()
+        res.update(
+            {
+                "maxOptimDuration": seconds_to_duration(
+                    self.toursolver_backend_id.duration
+                )
+            }
+        )
         return res
 
     def button_check_status(self):

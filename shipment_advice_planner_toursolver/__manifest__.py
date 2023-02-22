@@ -20,6 +20,7 @@
         "security/toursolver_resource.xml",
         "security/toursolver_task.xml",
         "security/toursolver_delivery_window.xml",
+        "security/toursolver_backend_option_definition.xml",
         # views
         "views/toursolver_backend.xml",
         "views/res_config_settings.xml",
@@ -32,7 +33,6 @@
         "wizards/shipment_advice_planner.xml",
     ],
     "demo": [
-        "demo/toursolver_delivery_window.xml",
         "demo/toursolver_backend.xml",
         "demo/toursolver_resource.xml",
         "demo/res_compnay.xml",

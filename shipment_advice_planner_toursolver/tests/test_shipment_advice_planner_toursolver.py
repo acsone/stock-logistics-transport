@@ -1,6 +1,7 @@
 # Copyright 2023 ACSONE SA/NV
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from freezegun import freeze_time
 from vcr_unittest import VCRTestCase
 
 from odoo.tests.common import Form, TransactionCase
@@ -87,9 +88,12 @@ class TestShipmentAdvicePlannerToursolver(VCRTestCase, TransactionCase):
         self.assertFalse(task.toursolver_error_message)
         self.assertEqual(task.task_id, "7FFFFE79952E95FD4ZD-9FWZQBuyh4qWhv2qpg")
 
+    @freeze_time("2023-02-15 10:30:00")
     def test_resource_properties(self):
         self.assertDictEqual(
-            self.resource_1._get_resource_properties(),
+            self.resource_1.with_context(
+                tz="Europe/Brussels"
+            )._get_resource_properties(),
             {
                 "globalCapacity": 9999,
                 "id": "D1",
@@ -98,6 +102,10 @@ class TestShipmentAdvicePlannerToursolver(VCRTestCase, TransactionCase):
                 "noReload": True,
                 "openStart": False,
                 "useAllCapacities": False,
+                "workPenalty": 0.0,
+                "workStartTime": "11:30:00",
+                "travelPenalty": 0.0,
+                "fixedLoadingDuration": "00:00:00",
             },
         )
 
@@ -146,3 +154,7 @@ class TestShipmentAdvicePlannerToursolver(VCRTestCase, TransactionCase):
         self.assertEqual(
             task.shipment_advice_ids.toursolver_resource_id, self.resource_2
         )
+
+    def test_backend_definition_creation(self):
+        backend = self.env["toursolver.backend"].create({"name": "backend"})
+        self.assertTrue(backend.definition_id)
