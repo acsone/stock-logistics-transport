@@ -62,10 +62,20 @@
                             <field name="resource_default_travel_penalty" />
                         </group>
                     </group>
-                    <group>
-                        <field name="definition_id" invisible="1" />
-                        <field name="backend_options" />
-                    </group>
+                    <separator string="Options" />
+                    <p
+                        style="width: 100%;color: grey;font-weight: bold;font-style: italic;"
+                    >
+                        Add the required options for route calculation by TourSolver.
+                        You can check the
+                        <a
+                            href="https://geoservices.geoconcept.com/ToursolverCloud/api-book.html#_json_tsoptions"
+                        >documentation</a>
+                        to learn more.<br />
+                    </p>
+                    <field name="backend_options" />
+                    <field name="definition_id" invisible="1" />
+
                 </sheet>
             </form>
         </field>

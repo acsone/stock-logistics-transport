@@ -110,7 +110,7 @@
         <field name="name">Tasks</field>
         <field name="parent_id" ref="toursolver_setting_menu" />
         <field name="action" ref="toursolver_task_act_window" />
-        <field name="sequence" eval="8" />
+        <field name="sequence" eval="4" />
     </record>
 
 </odoo>

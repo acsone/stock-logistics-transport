@@ -45,4 +45,5 @@ class ToursolverResource(models.Model):
         result.update(
             {p.get("string"): p.get("value") for p in self.resource_properties}
         )
+        result["id"] = self.resource_id
         return result

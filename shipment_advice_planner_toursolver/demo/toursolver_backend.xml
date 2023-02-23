@@ -19,7 +19,7 @@
         <field name="api_key">fake_api_key</field>
        <field
             name="resource_properties_definition"
-            eval="[{'name': '1', 'type': 'char', 'string': 'id', 'default': ''}, {'name': '2', 'type': 'char', 'string': 'mobileLogin', 'default': False}, {'name': '3', 'type': 'boolean', 'string': 'openStart', 'default': False}, {'name': '4', 'type': 'boolean', 'string': 'loadBeforeDeparture', 'default': True}, {'name': '5', 'type': 'boolean', 'string': 'noReload', 'default': True}, {'name': '6', 'type': 'integer', 'string': 'globalCapacity', 'default': 9999}, {'name': '7', 'type': 'boolean', 'string': 'useAllCapacities', 'default': False}]"
+            eval="[{'name': '2', 'type': 'char', 'string': 'mobileLogin', 'default': False}, {'name': '3', 'type': 'boolean', 'string': 'openStart', 'default': False}, {'name': '4', 'type': 'boolean', 'string': 'loadBeforeDeparture', 'default': True}, {'name': '5', 'type': 'boolean', 'string': 'noReload', 'default': True}, {'name': '6', 'type': 'integer', 'string': 'globalCapacity', 'default': 9999}, {'name': '7', 'type': 'boolean', 'string': 'useAllCapacities', 'default': False}]"
         />
         <field name="definition_id" ref="toursolver_backend_definition_demo" />
         <field
