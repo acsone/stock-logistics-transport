@@ -9,7 +9,7 @@
        <field name="toursolver_backend_id" ref="toursolver_backend_default" />
         <field
             name="resource_properties"
-            eval="{'1': 'D1', '2': 'd1@email.com', '3': False, '4': True, '5': True, '6': 9999, '7': False}"
+            eval="{'2': 'd1@email.com', '3': False, '4': True, '5': True, '6': 9999, '7': False}"
         />
     </record>
 
@@ -20,7 +20,7 @@
        <field name="toursolver_backend_id" ref="toursolver_backend_default" />
         <field
             name="resource_properties"
-            eval="{'1': 'D2', '2': 'd2@email.com', '3': False, '4': True, '5': True, '6': 9999, '7': False}"
+            eval="{'2': 'd2@email.com', '3': False, '4': True, '5': True, '6': 9999, '7': False}"
         />
     </record>
 </odoo>

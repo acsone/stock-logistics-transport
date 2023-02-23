@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, models
+from odoo.exceptions import UserError
 
 from odoo.addons.queue_job.exception import RetryableJobError
 
@@ -22,11 +23,13 @@ class ToursolverTask(models.Model):
                 " You will be notify once it's done"
             )
             % dict(task=self.name),
-            sticky=True,
+            sticky=False,
         )
 
     def _toursolver_check_status(self):
         res = super()._toursolver_check_status()
+        if not self.task_id:
+            raise UserError(_("TourSolver taskID is null"))
         if self.state == "in_progress":
             raise RetryableJobError(
                 "The result is not ready yet", seconds=5, ignore_retry=True
@@ -42,7 +45,7 @@ class ToursolverTask(models.Model):
                     " Shipment advices are created."
                 )
                 % dict(task=self.name),
-                sticky=True,
+                sticky=False,
             )
         return res
 
@@ -54,6 +57,6 @@ class ToursolverTask(models.Model):
                 " Please check the task for more details."
             )
             % dict(task=self.name),
-            sticky=True,
+            sticky=False,
         )
         return res
