@@ -37,5 +37,5 @@
         "demo/toursolver_resource.xml",
         "demo/res_compnay.xml",
     ],
-    "external_dependencies": {"python": ["requests", "vcrpy-unittest"]},
+    "external_dependencies": {"python": ["requests"]},
 }
