@@ -1,3 +1,5 @@
+vcrpy-unittest
+
 # stock-logistics-transport
 # https://github.com/OCA/stock-logistics-transport/pull/88
 odoo-addon-shipment-advice-planner @ git+https://github.com/OCA/stock-logistics-transport.git@refs/pull/88/head#subdirectory=setup/shipment_advice_planner
