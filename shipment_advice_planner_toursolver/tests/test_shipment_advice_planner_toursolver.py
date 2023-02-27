@@ -126,9 +126,22 @@ class TestShipmentAdvicePlannerToursolver(VCRTestCase, TransactionCase):
         self.assertEqual(task.state, "success")
         task.button_get_result()
         self.assertEqual(task.state, "done")
+        shipment = task.shipment_advice_ids
+        self.assertEqual(shipment.toursolver_resource_id, self.resource_2)
+        planned_picking = shipment.planned_picking_ids
+        planned_partners = shipment.planned_picking_ids.mapped("partner_id")
         self.assertEqual(
-            task.shipment_advice_ids.toursolver_resource_id, self.resource_2
+            set(planned_picking.mapped("toursolver_shipment_advice_rank")),
+            {1, 2},
         )
+        first_stop = planned_picking.filtered(
+            lambda p: p.toursolver_shipment_advice_rank == 1
+        ).partner_id
+        second_stop = planned_picking.filtered(
+            lambda p: p.toursolver_shipment_advice_rank == 2
+        ).partner_id
+        self.assertEqual(first_stop, planned_partners[1])
+        self.assertEqual(second_stop, planned_partners[0])
 
     def test_get_result_ko(self):
         task = self._create_task()
