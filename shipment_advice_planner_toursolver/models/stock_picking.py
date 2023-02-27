@@ -5,10 +5,18 @@ from odoo import api, fields, models
 
 
 class StockPicking(models.Model):
-
     _inherit = "stock.picking"
+    _order = (
+        "toursolver_shipment_advice_rank asc, priority desc, scheduled_date asc,"
+        " id desc"
+    )
 
     toursolver_task_id = fields.Many2one(comodel_name="toursolver.task", readonly=True)
+    toursolver_shipment_advice_rank = fields.Integer(
+        readonly=True,
+        help="The rank given by TourSolver to this picking in the set of planned stops"
+        " of the related shipment advice",
+    )
 
     @api.model
     def _get_compute_picking_to_plan_ids_depends(self):

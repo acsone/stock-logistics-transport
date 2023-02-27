@@ -232,10 +232,10 @@ class ToursolverTask(models.Model):
     def _toursolver_json_request_orders(self):
         return [
             self._toursolver_json_request_order(partner)
-            for partner in self._get_partners_to_deliver()
+            for partner in self._toursolver_partners_to_deliver()
         ]
 
-    def _get_partners_to_deliver(self):
+    def _toursolver_partners_to_deliver(self):
         return self.picking_ids.mapped("partner_id")
 
     def _toursolver_json_request_order(self, partner):
@@ -294,10 +294,10 @@ class ToursolverTask(models.Model):
                     }
                 )
         else:
-            time_windows.append(self._get_default_delivery_window())
+            time_windows.append(self._toursolver_default_delivery_window())
         return time_windows
 
-    def _get_default_delivery_window(self):
+    def _toursolver_default_delivery_window(self):
         self.ensure_one()
         delivery_window_model = self.env["toursolver.delivery.window"]
         backend = self.toursolver_backend_id
@@ -375,16 +375,17 @@ class ToursolverTask(models.Model):
             return
         self.result_data = base64.b64encode(json.dumps(result).encode())
         self.result_data_filename = f"{self.name} result data.json"
-        self._validate_result()
+        self._toursolver_validate_result()
         if not self.shipment_advice_ids and self.state in ("success", "done"):
-            self._create_shipment_advices()
+            self._toursolver_create_shipment_advices()
+        self._toursolver_sort_planned_picking()
         if self.state == "success":
             self.toursolver_status = "done"
 
-    def _validate_result(self):
+    def _toursolver_validate_result(self):
         self.ensure_one()
-        expected_partners = set(self._get_partners_to_deliver().ids)
-        received_partners = self._get_planned_partner_ids()
+        expected_partners = set(self._toursolver_partners_to_deliver().ids)
+        received_partners = self._toursolver_planned_partner_ids()
         missing_partners = self.env["res.partner"].browse(
             list(expected_partners - received_partners)
         )
@@ -414,7 +415,7 @@ class ToursolverTask(models.Model):
                 }
             )
 
-    def _get_planned_partner_ids_by_resource_id(self):
+    def _toursolver_planned_partner_ids_by_resource_id(self):
         result = defaultdict(list)
         for order in self.result_json["plannedOrders"]:
             if (
@@ -426,18 +427,20 @@ class ToursolverTask(models.Model):
                 result[order.get("resourceId")].append(int(order.get("stopId")))
         return result
 
-    def _get_planned_partner_ids(self):
-        planned_partner_by_resource = self._get_planned_partner_ids_by_resource_id()
+    def _toursolver_planned_partner_ids(self):
+        planned_partner_by_resource = (
+            self._toursolver_planned_partner_ids_by_resource_id()
+        )
         res = []
         for partner_ids in planned_partner_by_resource.values():
             res.extend(partner_ids)
         return set(res)
 
-    def _get_pickings_to_plan_by_resource(self):
+    def _toursolver_pickings_to_plan_by_resource(self):
         for (
             resource_id,
             partner_ids,
-        ) in self._get_planned_partner_ids_by_resource_id().items():
+        ) in self._toursolver_planned_partner_ids_by_resource_id().items():
             resource = self.delivery_resource_ids.filtered(
                 lambda r, r_id=resource_id: r.resource_id == r_id
             )
@@ -446,7 +449,7 @@ class ToursolverTask(models.Model):
             )
             yield resource, pickings_to_plan
 
-    def _get_new_shipment_advice_planer(self, resource, pickings_to_plan):
+    def _toursolver_new_shipment_advice_planer(self, resource, pickings_to_plan):
         planner = self.env["shipment.advice.planner"].new({})
         planner.warehouse_id = self.warehouse_id
         planner.shipment_planning_method = "simple"
@@ -456,10 +459,15 @@ class ToursolverTask(models.Model):
         planner.dock_id = self.dock_id
         return planner
 
-    def _create_shipment_advices(self):
+    def _toursolver_create_shipment_advices(self):
         self.ensure_one()
-        for resource, pickings_to_plan in self._get_pickings_to_plan_by_resource():
-            planner = self._get_new_shipment_advice_planer(resource, pickings_to_plan)
+        for (
+            resource,
+            pickings_to_plan,
+        ) in self._toursolver_pickings_to_plan_by_resource():
+            planner = self._toursolver_new_shipment_advice_planer(
+                resource, pickings_to_plan
+            )
             planner._plan_shipments_for_method()
 
     def button_show_shipment_advice(self):
@@ -481,3 +489,28 @@ class ToursolverTask(models.Model):
             task.button_get_result()
         for task in self.search([("state", "=", "draft")]):
             task.button_send_request()
+
+    def _toursolver_sort_planned_picking(self):
+        self.ensure_one()
+        for shipment in self.shipment_advice_ids:
+            if not shipment.toursolver_resource_id:
+                continue
+            rank = 1
+            for partner_id in self._toursolver_planned_partner_ids_sorted(
+                shipment.toursolver_resource_id.resource_id
+            ):
+                picks = shipment.planned_picking_ids.filtered(
+                    lambda pick, p_id=partner_id: pick.partner_id.id == p_id
+                )
+                picks.write({"toursolver_shipment_advice_rank": rank})
+                rank += 1
+
+    def _toursolver_planned_partner_ids_sorted(self, resource_id):
+        for order in self.result_json["plannedOrders"]:
+            if (
+                order.get("resourceId") == resource_id
+                and order.get("stopId")
+                and order.get("stopId").isdigit()
+                and order.get("stopType", 0) == 0
+            ):
+                yield int(order.get("stopId"))
