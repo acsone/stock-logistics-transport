@@ -28,8 +28,8 @@ class ShipmentAdvicePlanner(models.TransientModel):
         comodel_name="toursolver.task", string="Toursolver Task", readonly=True
     )
 
-    def _prepare_shipment_advice_common_vals(self, warehouse):
-        res = super()._prepare_shipment_advice_common_vals(warehouse)
+    def _prepare_shipment_advice_common_vals(self, picking_type):
+        res = super()._prepare_shipment_advice_common_vals(picking_type)
         res.update(
             {
                 "toursolver_resource_id": self.toursolver_resource_id.id,
@@ -43,26 +43,26 @@ class ShipmentAdvicePlanner(models.TransientModel):
         if self.shipment_planning_method != "toursolver":
             return super()._plan_shipments_for_method()
         for (
-            warehouse,
+            picking_type,
             pickings_to_plan,
-        ) in self._get_picking_to_plan_by_warehouse().items():
-            self._init_toursolver_task(warehouse, pickings_to_plan)
+        ) in self._get_picking_to_plan_by_picking_type().items():
+            self._init_toursolver_task(picking_type, pickings_to_plan)
         return self.env["shipment.advice"]
 
-    def _prepare_toursolver_task_vals(self, warehouse, pickings_to_plan):
+    def _prepare_toursolver_task_vals(self, picking_type, pickings_to_plan):
         task_model = self.env["toursolver.task"]
         backend = task_model._get_default_toursolver_backend()
         return {
             "toursolver_backend_id": backend.id,
-            "warehouse_id": warehouse.id,
+            "warehouse_id": picking_type.warehouse_id.id,
             "dock_id": self.dock_id.id,
             "picking_ids": [Command.set(pickings_to_plan.ids)],
             "delivery_resource_ids": [Command.set(self.delivery_resource_ids.ids)],
         }
 
-    def _init_toursolver_task(self, warehouse, pickings_to_plan):
+    def _init_toursolver_task(self, picking_type, pickings_to_plan):
         task_model = self.env["toursolver.task"]
         # create access is not given to any group
         return task_model.sudo().create(
-            self._prepare_toursolver_task_vals(warehouse, pickings_to_plan)
+            self._prepare_toursolver_task_vals(picking_type, pickings_to_plan)
         )
