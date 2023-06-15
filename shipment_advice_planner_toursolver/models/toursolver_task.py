@@ -329,12 +329,11 @@ class ToursolverTask(models.Model):
             "endX": address.partner_longitude,
             "endY": address.partner_latitude,
         }
-        if resource.use_delivery_person_coordinates_as_end:
-            delivery_person_id = resource.delivery_person_id
+        if resource.use_delivery_person_coordinates_as_end and resource.partner_id:
             res.update(
                 {
-                    "endX": delivery_person_id.partner_longitude,
-                    "endY": delivery_person_id.partner_latitude,
+                    "endX": resource.partner_id.partner_longitude,
+                    "endY": resource.partner_id.partner_latitude,
                 }
             )
         return res
