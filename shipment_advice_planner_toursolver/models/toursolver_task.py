@@ -49,6 +49,7 @@ class ToursolverTask(models.Model):
             ("error", "Error"),
             ("success", "Success"),
             ("done", "Done"),
+            ("cancelled", "Cancelled"),
         ],
         readonly=True,
         store=True,
@@ -513,3 +514,6 @@ class ToursolverTask(models.Model):
                 and order.get("stopType", 0) == 0
             ):
                 yield int(order.get("stopId"))
+
+    def button_cancel(self):
+        self.write({"toursolver_status": "aborted"})

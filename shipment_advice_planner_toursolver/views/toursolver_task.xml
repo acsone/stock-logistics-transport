@@ -26,6 +26,13 @@
                         string="Get Result"
                         states="success"
                     />
+                    <button
+                        name="button_cancel"
+                        type="object"
+                        string="Cancel Task"
+                        states="draft,in_progress"
+                    />
+
                     <field name="state" widget="statusbar" />
                 </header>
                 <div
@@ -91,6 +98,7 @@
         <field name="model">toursolver.task</field>
         <field name="arch" type="xml">
             <tree>
+                        <field name="name" />
                         <field name="date" />
                         <field name="task_id" />
                         <field name="state" />
