@@ -125,6 +125,8 @@ class ToursolverTask(models.Model):
 
     def _toursolver_query_url(self, action, **url_params):
         backend = self.toursolver_backend_id
+        if not backend.url or not backend.api_key:
+            raise ValidationError(_("The tousolver backend is not configured."))
         baseurl = backend.url
         url_params = url_params or {}
         url_params["tsCloudApiKey"] = backend.api_key
