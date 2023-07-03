@@ -11,7 +11,9 @@ class StockPicking(models.Model):
         " id desc"
     )
 
-    toursolver_task_id = fields.Many2one(comodel_name="toursolver.task", readonly=True)
+    toursolver_task_id = fields.Many2one(
+        comodel_name="toursolver.task", readonly=True, copy=False
+    )
     toursolver_shipment_advice_rank = fields.Integer(
         readonly=True,
         help="The rank given by TourSolver to this picking in the set of planned stops"
