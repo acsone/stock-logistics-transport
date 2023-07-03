@@ -181,7 +181,9 @@ class StockPicking(models.Model):
 
     def _plan_in_shipment(self, shipment_advice):
         """Plan the whole transfers content into the given shipment advice."""
-        self.move_ids._plan_in_shipment(shipment_advice)
+        self.move_ids.filtered(lambda m: m.state == "assigned")._plan_in_shipment(
+            shipment_advice
+        )
 
     def _load_in_shipment(self, shipment_advice):
         """Load the whole transfers content into the given shipment advice."""
