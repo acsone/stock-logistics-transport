@@ -139,7 +139,11 @@ class ShipmentAdvicePlanner(models.TransientModel):
     def _prepare_shipment_advice_simple_vals_list(self, picking_type, pickings_to_plan):
         self.ensure_one()
         vals = self._prepare_shipment_advice_common_vals(picking_type)
-        vals["planned_move_ids"] = [Command.set(pickings_to_plan.move_ids.ids)]
+        moves_to_plan = pickings_to_plan.move_ids.filtered(
+            lambda m: m.state in ("assigned", "partially_available")
+        )
+        if moves_to_plan:
+            vals["planned_move_ids"] = [Command.set(moves_to_plan.ids)]
         return [vals]
 
     def _prepare_shipment_advice_common_vals(self, picking_type):
