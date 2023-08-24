@@ -75,9 +75,17 @@
                     </group>
                     <notebook>
 
-                        <page string="Pickings to plan"><field
-                                name="picking_ids"
-                            /></page>
+                        <page string="Pickings to plan">
+                            <field name="picking_ids">
+                                <tree>
+                                    <field name="toursolver_shipment_advice_rank" />
+                                    <field name="name" />
+                                    <field name="partner_id" />
+                                    <field name="origin" />
+                                    <field name="state" />
+                                </tree>
+                            </field>
+                        </page>
                         <page string="Data"><group>
                             <field
                                     name="request_data"
