@@ -16,6 +16,7 @@ class StockPicking(models.Model):
     )
     toursolver_shipment_advice_rank = fields.Integer(
         readonly=True,
+        string="Toursolver Rank",
         help="The rank given by TourSolver to this picking in the set of planned stops"
         " of the related shipment advice",
     )
