@@ -4,41 +4,14 @@
 from freezegun import freeze_time
 from vcr_unittest import VCRTestCase
 
-from odoo.tests.common import Form, TransactionCase
 from odoo.tools import mute_logger
 
+from .common import TestShipmentAdvicePlannerToursolverCommon
 
-class TestShipmentAdvicePlannerToursolver(VCRTestCase, TransactionCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.pickings = cls.env["stock.picking"].search([])
-        cls.context = {
-            "active_ids": cls.pickings.ids,
-            "active_model": "stock.picking",
-        }
-        cls.warehouse = cls.env.ref("stock.warehouse0")
-        cls.resource_1 = cls.env.ref(
-            "shipment_advice_planner_toursolver.toursolver_resource_r1_demo"
-        )
-        cls.resource_2 = cls.env.ref(
-            "shipment_advice_planner_toursolver.toursolver_resource_r2_demo"
-        )
 
-    def setUp(self):
-        super().setUp()
-        self.wizard_form = Form(
-            self.env["shipment.advice.planner"].with_context(**self.context)
-        )
-        self.wizard_form.shipment_planning_method = "toursolver"
-        self.wizard_form.warehouse_id = self.warehouse
-
-    def _create_task(self):
-        wizard = self.wizard_form.save()
-        wizard.delivery_resource_ids = self.resource_1 | self.resource_2
-        wizard.button_plan_shipments()
-        return wizard.picking_to_plan_ids.toursolver_task_id
-
+class TestShipmentAdvicePlannerToursolver(
+    VCRTestCase, TestShipmentAdvicePlannerToursolverCommon
+):
     def test_query_url(self):
         expected_query_url = (
             "https://geoservices.geoconcept.com/ToursolverCloud/api/ts/toursolver/"
@@ -51,6 +24,7 @@ class TestShipmentAdvicePlannerToursolver(VCRTestCase, TransactionCase):
         self.assertEqual(query_url, expected_query_url)
 
     def test_toursolver_task_creation(self):
+        self.wizard_form.shipment_planning_method = "toursolver"
         wizard = self.wizard_form.save()
         self.assertFalse(wizard.picking_to_plan_ids.toursolver_task_id)
         wizard.button_plan_shipments()
