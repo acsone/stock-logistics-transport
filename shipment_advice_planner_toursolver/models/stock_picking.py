@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models
-from odoo.osv.expression import AND, distribute_not
+from odoo.osv.expression import AND, OR
 
 
 class StockPicking(models.Model):
@@ -42,14 +42,16 @@ class StockPicking(models.Model):
         return res
 
     def _search_can_be_planned_in_shipment_advice(self, operator, value):
+        domain = super()._search_can_be_planned_in_shipment_advice(operator, value)
         if (operator == "=" and value) or (operator == "!=" and not value):
-            domain = super()._search_can_be_planned_in_shipment_advice(operator, value)
             extra_domain = [
                 "|",
                 ("toursolver_task_id", "=", False),
                 ("toursolver_task_id.state", "not in", ("draft", "in_progress")),
             ]
             return AND([domain, extra_domain])
-        return distribute_not(
-            ["!"] + self._search_can_be_planned_in_shipment_advice("=", True)
-        )
+        extra_domain = [
+            ("toursolver_task_id", "!=", False),
+            ("toursolver_task_id.state", "in", ("draft", "in_progress")),
+        ]
+        return OR([domain, extra_domain])
