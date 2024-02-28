@@ -91,7 +91,10 @@ class ToursolverTask(models.Model):
     def create(self, vals_list):
         sequence_model = self.env["ir.sequence"]
         for vals in vals_list:
-            vals["name"] = sequence_model.next_by_code("toursolver.task")
+            name = sequence_model.next_by_code("toursolver.task")
+            if vals.get("name"):
+                name = f"{name} {vals.get('name')}"
+            vals["name"] = name
         return super().create(vals_list)
 
     @api.depends("toursolver_status")
