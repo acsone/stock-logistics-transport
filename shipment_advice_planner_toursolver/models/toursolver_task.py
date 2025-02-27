@@ -346,6 +346,15 @@ class ToursolverTask(models.Model):
     def _toursolver_json_request_resource(self, resource):
         res = resource._get_resource_properties()
         res.update(self._toursolver_json_request_resource_start_end_position(resource))
+        # This parameter is intended to work around an issue in TourSolver when
+        # optimizing for multiple resources.
+        # Even if the request involves multiple resources and the BalancingType option
+        # is specified, TourSolver does not distribute the workload across resources
+        # but instead assigns all of it to a single resource.
+        # Setting maximumVisits to the (len(addresses) - 1) forces the system to
+        # distribute the workload
+        if len(self.delivery_resource_ids) > 1:
+            res["maximumVisits"] = len(self._toursolver_partners_to_deliver()) - 1
         return res
 
     def _toursolver_json_request_resource_start_end_position(self, resource):
@@ -372,7 +381,12 @@ class ToursolverTask(models.Model):
             {
                 "maxOptimDuration": seconds_to_duration(
                     self.toursolver_backend_id.duration
-                )
+                ),
+                "advancedSettings": [
+                    "BalancingCost=1",
+                    "CostsWeights=balancing:5",
+                    "BalancingValue=WORKTIME",
+                ],
             }
         )
         return res
